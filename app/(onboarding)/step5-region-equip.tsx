@@ -39,14 +39,14 @@ export default function Step5RegionAndEquipment() {
   };
 
   const handleNext = () => {
-    setRegionPreference(selectedRegion, true);
-    setEquipmentAccess(selectedEquipment, true);
+    setRegionPreference(selectedRegion);
+    setEquipmentAccess(selectedEquipment);
     router.push('/(onboarding)/step6-reminders');
   };
 
   const handleSkipEquipment = () => {
-    setRegionPreference(selectedRegion, true);
-    setEquipmentAccess(['bodyweight'], true);
+    setRegionPreference(selectedRegion);
+    setEquipmentAccess(['bodyweight']);
     router.push('/(onboarding)/step6-reminders');
   };
 

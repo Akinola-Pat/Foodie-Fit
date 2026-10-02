@@ -48,6 +48,20 @@ Standing items to check as the relevant build steps come up, not saved for the v
 
 *(Keep logging here as the build moves forward, screen reviews, device testing notes, anything else that turns up, and eventually the deployment steps: local dev, GitHub, hosting, production.)*
 
+## Friday, October 3, 2026
+
+Resumed from a context checkpoint. Audited the current state of the project before making any changes rather than assuming the checkpoint summary was complete.
+
+The one genuine blocker remaining: `(tabs)/_layout.tsx` declared a `profile` tab but `profile.tsx` didn't exist. That would crash the app on launch since Expo Router would find the screen registered in the layout with no corresponding file. Everything else — the six onboarding steps, plan summary, home, meals, workouts, and progress tabs, all services and stores — was already in place and compiling.
+
+Built `profile.tsx`. It shows: a user identity card (name, guest/email status), calorie and macro target summary pulled from the live nutrition plan, a profile details list (goal, activity level, region, diet, current weight, target weight), live-toggle notification reminder switches that re-schedule real local notifications on change, and account management rows (Reset Plan with a destructive Alert confirmation, Delete Account with the existing DeleteAccountModal requiring typed confirmation). Guest users see the GuestBanner at the top.
+
+Also found and fixed a pre-existing TypeScript error in `step5-region-equip.tsx`: `setRegionPreference` and `setEquipmentAccess` were being called with two arguments but the store functions only accept one. Removed the stale second argument (`true`) from all four call sites.
+
+Result: `npx tsc --noEmit` exits clean — zero errors across the entire codebase.
+
+Still owed before calling the app complete: a real tap-through on a device or simulator to verify the onboarding → plan summary → tabs → profile navigation chain actually works end-to-end, not just compiles. The Expo Go notification error was already fixed in the prior session (lazy import guard for Android SDK 53+). The TypeScript clean state is confirmed but device rendering isn't.
+
 ## Sunday, September 20, 2026
 
 Went back to the codebase after a stretch on other work and pulled the actual state of the app instead of going off memory of where things stood. Good thing I did. The onboarding flow ended in a real dead end: step 6 pushes to `/(onboarding)/plan-summary`, and that file did not exist. The onboarding layout even had a `Stack.Screen` declared for it. Declared, not built. Past that, root layout references `(tabs)`, `(auth)`, and `settings/account`, none of which existed either. So the honest state of the app before today was: a working six-step onboarding flow that led nowhere.
