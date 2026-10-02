@@ -24,8 +24,6 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false, presentation: 'modal' }} />
-        <Stack.Screen name="settings/account" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );

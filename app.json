@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Foodie Fit",
+    "slug": "foodie-fit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "foodiefit",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF8F0"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.foodiefit.app"
+    },
+    "android": {
+      "package": "com.foodiefit.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF8F0"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

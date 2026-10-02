@@ -1,20 +1,37 @@
-import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { NotificationPreferences } from '../types/auth';
 
-/**
- * Configure notification presentation behavior when app is foregrounded
- */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+// Lazily load expo-notifications only outside of Expo Go on Android
+// to prevent the fatal SDK 53+ remote notification removal error.
+let Notifications: any = null;
+
+if (!isExpoGo) {
+  try {
+    Notifications = require('expo-notifications');
+    Notifications?.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  } catch (err) {
+    console.warn('[NotificationService] Could not load expo-notifications:', err);
+  }
+}
 
 export async function requestNotificationPermission(): Promise<{ granted: boolean; token?: string }> {
+  if (isExpoGo || !Notifications) {
+    // In Expo Go, push notifications are removed as of SDK 53.
+    // Return simulated granted state for local UI testing.
+    return { granted: true };
+  }
+
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -48,6 +65,15 @@ export async function requestNotificationPermission(): Promise<{ granted: boolea
  * Schedules daily and weekly reminders based on user preferences.
  */
 export async function scheduleReminders(prefs: NotificationPreferences): Promise<void> {
+  if (isExpoGo || !Notifications) {
+    console.log('[NotificationService] Reminders configured (simulated in Expo Go):', {
+      workout: prefs.workoutReminders ? prefs.workoutTime || '07:00' : 'off',
+      meals: prefs.mealReminders ? 'active' : 'off',
+      weighin: prefs.weighinReminders ? prefs.weighinTime || '08:00' : 'off',
+    });
+    return;
+  }
+
   try {
     // 1. Cancel existing scheduled local notifications to prevent duplicates
     await Notifications.cancelAllScheduledNotificationsAsync();

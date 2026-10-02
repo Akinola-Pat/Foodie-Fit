@@ -16,7 +16,6 @@ export default function OnboardingLayout() {
       <Stack.Screen name="step5-region-equip" />
       <Stack.Screen name="step6-reminders" />
       <Stack.Screen name="plan-summary" />
-      <Stack.Screen name="create-account-prompt" />
     </Stack>
   );
 }
