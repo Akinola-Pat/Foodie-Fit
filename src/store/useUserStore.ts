@@ -1,18 +1,20 @@
 import { create } from 'zustand';
 import { UserProfile, NotificationPreferences } from '../types/auth';
 import { NutritionPlan, generateNutritionPlan } from '../services/nutritionEngine';
-import { saveProfile } from '../services/userService';
-import { RegionCode } from '../types/nutrition';
+import { saveProfile, loadLocalProfile } from '../services/userService';
+import { RegionCode, DietaryPreference } from '../types/nutrition';
 import { EquipmentType } from '../types/workout';
 
 interface UserState {
   profile: UserProfile | null;
   nutritionPlan: NutritionPlan | null;
   notificationPrefs: NotificationPreferences;
-  setProfile: (profile: UserProfile, isGuest?: boolean) => void;
-  updateProfilePartial: (updates: Partial<UserProfile>, isGuest?: boolean) => void;
-  setRegionPreference: (region: RegionCode, isGuest?: boolean) => void;
-  setEquipmentAccess: (equipment: EquipmentType[], isGuest?: boolean) => void;
+  initProfile: () => Promise<void>;
+  setProfile: (profile: UserProfile) => void;
+  updateProfilePartial: (updates: Partial<UserProfile>) => void;
+  setRegionPreference: (region: RegionCode) => void;
+  setDietaryPreference: (diet: DietaryPreference) => void;
+  setEquipmentAccess: (equipment: EquipmentType[]) => void;
   setNotificationPrefs: (prefs: Partial<NotificationPreferences>) => void;
   calculateAndSetNutrition: () => void;
   reset: () => void;
@@ -32,7 +34,22 @@ export const useUserStore = create<UserState>((set, get) => ({
   nutritionPlan: null,
   notificationPrefs: DEFAULT_NOTIFS,
 
-  setProfile: (profile: UserProfile, isGuest = true) => {
+  initProfile: async () => {
+    const cached = await loadLocalProfile();
+    if (cached) {
+      const plan = generateNutritionPlan({
+        age: cached.age,
+        gender: cached.gender,
+        heightCm: cached.heightCm,
+        weightKg: cached.currentWeightKg,
+        activityLevel: cached.activityLevel,
+        goal: cached.goal,
+      });
+      set({ profile: cached, nutritionPlan: plan });
+    }
+  },
+
+  setProfile: (profile: UserProfile) => {
     const plan = generateNutritionPlan({
       age: profile.age,
       gender: profile.gender,
@@ -42,15 +59,23 @@ export const useUserStore = create<UserState>((set, get) => ({
       goal: profile.goal,
     });
 
-    set({ profile, nutritionPlan: plan });
-    saveProfile(profile, isGuest);
+    const fullProfile: UserProfile = {
+      ...profile,
+      targetCalories: plan.targetCalories,
+      targetProteinG: plan.proteinGrams,
+      targetCarbsG: plan.carbsGrams,
+      targetFatG: plan.fatGrams,
+    };
+
+    set({ profile: fullProfile, nutritionPlan: plan });
+    saveProfile(fullProfile);
   },
 
-  updateProfilePartial: (updates: Partial<UserProfile>, isGuest = true) => {
+  updateProfilePartial: (updates: Partial<UserProfile>) => {
     const current = get().profile;
     if (!current) return;
     const updated = { ...current, ...updates, updatedAt: new Date().toISOString() };
-    
+
     const plan = generateNutritionPlan({
       age: updated.age,
       gender: updated.gender,
@@ -60,16 +85,28 @@ export const useUserStore = create<UserState>((set, get) => ({
       goal: updated.goal,
     });
 
-    set({ profile: updated, nutritionPlan: plan });
-    saveProfile(updated, isGuest);
+    const refreshedProfile: UserProfile = {
+      ...updated,
+      targetCalories: plan.targetCalories,
+      targetProteinG: plan.proteinGrams,
+      targetCarbsG: plan.carbsGrams,
+      targetFatG: plan.fatGrams,
+    };
+
+    set({ profile: refreshedProfile, nutritionPlan: plan });
+    saveProfile(refreshedProfile);
   },
 
-  setRegionPreference: (region: RegionCode, isGuest = true) => {
-    get().updateProfilePartial({ regionPreference: region }, isGuest);
+  setRegionPreference: (region: RegionCode) => {
+    get().updateProfilePartial({ regionPreference: region });
   },
 
-  setEquipmentAccess: (equipment: EquipmentType[], isGuest = true) => {
-    get().updateProfilePartial({ equipmentAccess: equipment }, isGuest);
+  setDietaryPreference: (diet: DietaryPreference) => {
+    get().updateProfilePartial({ dietaryPreference: diet });
+  },
+
+  setEquipmentAccess: (equipment: EquipmentType[]) => {
+    get().updateProfilePartial({ equipmentAccess: equipment });
   },
 
   setNotificationPrefs: (prefs) => {

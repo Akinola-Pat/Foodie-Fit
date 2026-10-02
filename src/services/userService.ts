@@ -4,6 +4,16 @@ import { UserProfile } from '../types/auth';
 
 const LOCAL_PROFILE_KEY = '@foodie_fit_user_profile';
 
+export async function loadLocalProfile(): Promise<UserProfile | null> {
+  try {
+    const raw = await AsyncStorage.getItem(LOCAL_PROFILE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn('Error reading local profile:', err);
+    return null;
+  }
+}
+
 export async function fetchProfile(userId: string): Promise<UserProfile | null> {
   try {
     const { data, error } = await supabase
@@ -12,7 +22,9 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
       .eq('id', userId)
       .single();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return loadLocalProfile();
+    }
 
     const profile: UserProfile = {
       id: data.id,
@@ -40,15 +52,14 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
     return profile;
   } catch (err) {
     console.warn('Failed to fetch remote profile, reading local storage:', err);
-    const raw = await AsyncStorage.getItem(LOCAL_PROFILE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return loadLocalProfile();
   }
 }
 
-export async function saveProfile(profile: UserProfile, isGuest: boolean = false): Promise<void> {
+export async function saveProfile(profile: UserProfile): Promise<void> {
   await AsyncStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
 
-  if (!isGuest && profile.id && profile.id !== 'guest') {
+  if (profile.id && profile.id !== 'guest' && profile.id !== 'local_user') {
     try {
       const { error } = await supabase.from('profiles').upsert({
         id: profile.id,

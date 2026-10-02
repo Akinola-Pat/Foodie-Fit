@@ -159,6 +159,30 @@ export interface Database {
         };
         Update: Partial<Database['public']['Tables']['notification_preferences']['Insert']>;
       };
+      journal_entries: {
+        Relationships: [];
+        Row: {
+          id: string;
+          user_id: string;
+          entry_date: string;
+          energy_level: 'low' | 'moderate' | 'high';
+          adherence_score: 'on_track' | 'mostly' | 'struggled';
+          workout_status: 'completed' | 'rest_day' | 'skipped';
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          entry_date: string;
+          energy_level: 'low' | 'moderate' | 'high';
+          adherence_score: 'on_track' | 'mostly' | 'struggled';
+          workout_status: 'completed' | 'rest_day' | 'skipped';
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['journal_entries']['Insert']>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -4,8 +4,12 @@ import { WeightLog } from '../types/auth';
 
 const LOCAL_WEIGHT_KEY = '@foodie_fit_weight_logs';
 
-export async function fetchWeightLogs(userId?: string, isGuest: boolean = false): Promise<WeightLog[]> {
-  if (isGuest || !userId) {
+export function validateWeight(weightKg: number): boolean {
+  return typeof weightKg === 'number' && !isNaN(weightKg) && weightKg >= 25 && weightKg <= 400;
+}
+
+export async function fetchWeightLogs(userId?: string): Promise<WeightLog[]> {
+  if (!userId || userId === 'guest' || userId === 'local_user') {
     const raw = await AsyncStorage.getItem(LOCAL_WEIGHT_KEY);
     return raw ? JSON.parse(raw) : [];
   }
@@ -18,13 +22,15 @@ export async function fetchWeightLogs(userId?: string, isGuest: boolean = false)
       .order('logged_at', { ascending: true });
 
     if (error) throw error;
-    return (data || []).map((row) => ({
+    const logs: WeightLog[] = (data || []).map((row) => ({
       id: row.id,
       userId: row.user_id,
       weightKg: Number(row.weight_kg),
       notes: row.notes,
       loggedAt: row.logged_at,
     }));
+    await AsyncStorage.setItem(LOCAL_WEIGHT_KEY, JSON.stringify(logs));
+    return logs;
   } catch (err) {
     console.warn('Failed to fetch remote weight logs, reading local cache:', err);
     const raw = await AsyncStorage.getItem(LOCAL_WEIGHT_KEY);
@@ -35,32 +41,34 @@ export async function fetchWeightLogs(userId?: string, isGuest: boolean = false)
 export async function logWeightEntry(
   weightKg: number,
   notes?: string,
-  userId?: string,
-  isGuest: boolean = false
+  userId?: string
 ): Promise<WeightLog> {
+  if (!validateWeight(weightKg)) {
+    throw new Error('Please enter a valid weight between 25kg and 400kg.');
+  }
+
   const newEntry: WeightLog = {
     id: `local_${Date.now()}`,
-    userId: userId || 'guest',
-    weightKg,
-    notes: notes || null,
+    userId: userId || 'local_user',
+    weightKg: Math.round(weightKg * 10) / 10,
+    notes: notes?.trim() || null,
     loggedAt: new Date().toISOString(),
   };
 
-  // Always update local cache for instant UI response and guest support
-  const localList = await fetchWeightLogs(userId, true);
+  const localList = await fetchWeightLogs();
   const updatedList = [...localList, newEntry].sort(
     (a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime()
   );
   await AsyncStorage.setItem(LOCAL_WEIGHT_KEY, JSON.stringify(updatedList));
 
-  if (!isGuest && userId) {
+  if (userId && userId !== 'guest' && userId !== 'local_user') {
     try {
       const { data, error } = await supabase
         .from('weight_logs')
         .insert({
           user_id: userId,
-          weight_kg: weightKg,
-          notes: notes || null,
+          weight_kg: newEntry.weightKg,
+          notes: newEntry.notes,
           logged_at: newEntry.loggedAt,
         })
         .select()

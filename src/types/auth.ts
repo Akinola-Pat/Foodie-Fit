@@ -41,3 +41,18 @@ export interface NotificationPreferences {
   weighinTime: string;
   pushToken?: string | null;
 }
+
+export type EnergyLevel = 'low' | 'moderate' | 'high';
+export type AdherenceScore = 'on_track' | 'mostly' | 'struggled';
+export type WorkoutDayStatus = 'completed' | 'rest_day' | 'skipped';
+
+export interface JournalEntry {
+  id: string;
+  userId: string;
+  entryDate: string; // YYYY-MM-DD
+  energyLevel: EnergyLevel;
+  adherenceScore: AdherenceScore;
+  workoutStatus: WorkoutDayStatus;
+  notes?: string | null;
+  createdAt: string;
+}

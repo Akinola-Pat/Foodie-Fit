@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS public.notification_preferences (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. JOURNAL ENTRIES (DAILY CHECK-INS)
+CREATE TABLE IF NOT EXISTS public.journal_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  entry_date DATE NOT NULL,
+  energy_level TEXT NOT NULL,
+  adherence_score TEXT NOT NULL,
+  workout_status TEXT NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, entry_date)
+);
+
 -- ENABLE ROW LEVEL SECURITY
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.weight_logs ENABLE ROW LEVEL SECURITY;
@@ -81,6 +94,7 @@ ALTER TABLE public.workout_completions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meal_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meal_swaps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.journal_entries ENABLE ROW LEVEL SECURITY;
 
 -- POLICIES
 CREATE POLICY "Users can CRUD own profile" ON public.profiles FOR ALL USING (auth.uid() = id);
@@ -89,6 +103,7 @@ CREATE POLICY "Users can CRUD own workout completions" ON public.workout_complet
 CREATE POLICY "Users can CRUD own meal plans" ON public.meal_plans FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can CRUD own meal swaps" ON public.meal_swaps FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can CRUD own notification prefs" ON public.notification_preferences FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can CRUD own journal entries" ON public.journal_entries FOR ALL USING (auth.uid() = user_id);
 
 /**
  * Account Deletion Database Function (Apple Guideline 5.1.1(v))
@@ -100,7 +115,7 @@ CREATE POLICY "Users can CRUD own notification prefs" ON public.notification_pre
  * The foreign key `profiles(id) REFERENCES auth.users(id) ON DELETE CASCADE` triggers.
  * Because all user-data tables reference `profiles(id) ON DELETE CASCADE`, PostgreSQL
  * atomically deletes all rows across profiles, weight_logs, workout_completions,
- * meal_plans, meal_swaps, and notification_preferences in a single transaction.
+ * meal_plans, meal_swaps, notification_preferences, and journal_entries in a single transaction.
  */
 CREATE OR REPLACE FUNCTION public.delete_user_account()
 RETURNS void

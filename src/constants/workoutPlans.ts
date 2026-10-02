@@ -211,4 +211,110 @@ export const WORKOUT_ROUTINES: WorkoutRoutine[] = [
       },
     ],
   },
+  {
+    id: 'w_band_fullbody_1',
+    title: 'Total Body Band Activation',
+    difficulty: 'beginner',
+    durationMinutes: 22,
+    estimatedCaloriesBurned: 190,
+    equipment: ['resistance_bands'],
+    category: 'strength',
+    description: 'Joint-friendly resistance band circuit targeting upper, lower, and core musculature with continuous tension.',
+    exercises: [
+      {
+        id: 'ex_bnd_1',
+        name: 'Band-Resisted Squats',
+        targetMuscle: 'Quadriceps & Glute Medius',
+        sets: 3,
+        repsOrDuration: '15 reps',
+        restSeconds: 30,
+        instructions: 'Loop loop band just above knees. Squat while keeping knees tracking outward against the resistance.',
+      },
+      {
+        id: 'ex_bnd_2',
+        name: 'Banded Face Pulls & Pull-Aparts',
+        targetMuscle: 'Rear Delts & Upper Back',
+        sets: 3,
+        repsOrDuration: '15 reps',
+        restSeconds: 30,
+        instructions: 'Hold band with straight arms at shoulder height. Pull band apart by retracting shoulder blades until hands reach chest line.',
+      },
+      {
+        id: 'ex_bnd_3',
+        name: 'Standing Banded Chest Press',
+        targetMuscle: 'Pectorals & Triceps',
+        sets: 3,
+        repsOrDuration: '12-15 reps',
+        restSeconds: 30,
+        instructions: 'Anchor band behind back at mid-chest height. Press handles forward until arms are extended, squeezing chest.',
+      },
+      {
+        id: 'ex_bnd_4',
+        name: 'Banded Pallof Press',
+        targetMuscle: 'Anti-Rotation Core',
+        sets: 3,
+        repsOrDuration: '10 reps / side',
+        restSeconds: 30,
+        instructions: 'Anchor band at chest height. Stand perpendicular, hold handle at sternum, and press straight out resisting rotational pull.',
+      },
+    ],
+  },
+  {
+    id: 'w_gym_power_1',
+    title: 'Gym Compound Power Split',
+    difficulty: 'intermediate',
+    durationMinutes: 35,
+    estimatedCaloriesBurned: 320,
+    equipment: ['full_gym'],
+    category: 'strength',
+    description: 'Foundational compound gym movements maximizing progressive overload and functional hypertrophy.',
+    exercises: [
+      {
+        id: 'ex_gym_1',
+        name: 'Barbell or Machine Chest Press',
+        targetMuscle: 'Chest, Anterior Delts',
+        sets: 4,
+        repsOrDuration: '8-10 reps',
+        restSeconds: 60,
+        instructions: 'Plant feet flat. Lower bar smoothly to mid-chest and drive up aggressively without locking elbows.',
+      },
+      {
+        id: 'ex_gym_2',
+        name: 'Lat Pulldowns or Cable Rows',
+        targetMuscle: 'Latissimus Dorsi',
+        sets: 4,
+        repsOrDuration: '10-12 reps',
+        restSeconds: 60,
+        instructions: 'Grip bar slightly wider than shoulders. Pull down to upper collarbone driving elbows down and back.',
+      },
+      {
+        id: 'ex_gym_3',
+        name: 'Leg Press or Hack Squats',
+        targetMuscle: 'Quads & Glutes',
+        sets: 4,
+        repsOrDuration: '10-12 reps',
+        restSeconds: 60,
+        instructions: 'Place feet shoulder-width on platform. Lower sled under control until knees reach 90 degrees, press through whole foot.',
+      },
+      {
+        id: 'ex_gym_4',
+        name: 'Hanging Leg or Knee Raises',
+        targetMuscle: 'Lower Rectus Abdominis',
+        sets: 3,
+        repsOrDuration: '12 reps',
+        restSeconds: 45,
+        instructions: 'Hang from pull-up bar. Curl knees toward chest avoiding swinging, lower with controlled tempo.',
+      },
+    ],
+  },
 ];
+
+export function getWorkoutById(id: string): WorkoutRoutine | undefined {
+  return WORKOUT_ROUTINES.find((w) => w.id === id);
+}
+
+export function getWorkoutsByEquipment(userEquipment: string[]): WorkoutRoutine[] {
+  return WORKOUT_ROUTINES.filter((routine) =>
+    routine.equipment.some((eq) => userEquipment.includes(eq) || eq === 'bodyweight')
+  );
+}
