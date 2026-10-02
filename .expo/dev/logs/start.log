@@ -761,3 +761,9 @@
 {"_e":"metro:client_log","_t":1790964324374,"level":"warn","data":["[Layout children]: Too many screens defined. Route \"settings/account\" is extraneous."]}
 {"_e":"metro:client_log","_t":1790964324742,"level":"warn","data":["[Layout children]: Too many screens defined. Route \"create-account-prompt\" is extraneous."]}
 {"_e":"metro:client_log","_t":1790964325594,"level":"warn","data":["Error loading initial logs:","[AsyncStorageError: Native module is null, cannot access legacy storage]"]}
+{"_e":"root:init","_t":1790965021831,"format":"v0-jsonl","version":"57.0.20"}
+{"_e":"env:mode","_t":1790965021833,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1790965021837,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1790965022541,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1790965023931,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1790965025037,"plugins":[]}
